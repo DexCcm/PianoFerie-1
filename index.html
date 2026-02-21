@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/png" href="holiday.png">
 
-<title>Piano Ferie 2026</title>
+<title>Planner Ferie 2026</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <!-- Firebase SDK v9+ (modular) -->
 <script type="module">
@@ -407,7 +408,7 @@ h1{
 #plannersContainer{
     display:flex;
     flex-direction:column;
-    gap:22px;
+    gap:28px;
 }
 
 .planner-month-title{
@@ -468,7 +469,7 @@ th.member-name,td.member-name{
     cursor:not-allowed;
 }
 [data-theme="dark"] .holiday-col{
-    background:#174E54;
+    background:#78350f;
 }
 td.editable{cursor:pointer}
 td.editable:hover{background:var(--hover-bg)}
@@ -490,12 +491,17 @@ td.afternoon-partial{background:#e6dbff;color:#4b2dbf;font-weight:600}
     align-items:center;
     justify-content:center;
     z-index:1000;
+    overflow-y:auto;
+    padding:20px;
 }
 .modal-panel{
     background:var(--bg-secondary);
     border-radius:18px;
     padding:20px 22px;
     width:420px;
+    max-width:90vw;
+    max-height:90vh;
+    overflow-y:auto;
 }
 .modal-title{
     font-weight:700;
@@ -613,6 +619,119 @@ td.afternoon-partial{background:#e6dbff;color:#4b2dbf;font-weight:600}
     #dashboardTable td{padding:10px 8px}
 }
 
+/* ================= PDF SPECIFIC STYLES ================= */
+.pdf-export-mode .stats-row{
+    width:100%;
+    grid-template-columns:repeat(4, 1fr);
+    gap:6px;
+    margin-bottom:8px;
+}
+.pdf-export-mode .stat-card{
+    padding:6px 8px;
+    border-left-width:2px;
+}
+.pdf-export-mode .stat-label{
+    font-size:8px;
+    margin-bottom:3px;
+}
+.pdf-export-mode .stat-value{
+    font-size:14px;
+}
+.pdf-export-mode .stat-subvalue{
+    font-size:9px;
+    margin-top:2px;
+}
+
+.pdf-export-mode .dashboard-row{
+    width:100%;
+    gap:2%;
+    margin-bottom:10px;
+}
+.pdf-export-mode .dashboard-box{
+    width:30%;
+    padding:8px;
+}
+.pdf-export-mode .dashboard-box h3{
+    font-size:12px;
+    margin-bottom:6px;
+}
+.pdf-export-mode #dashboardTable{
+    font-size:9px;
+}
+.pdf-export-mode #dashboardTable th,
+.pdf-export-mode #dashboardTable td{
+    padding:4px 3px;
+}
+
+.pdf-export-mode .chart-box{
+    width:70%;
+    padding:8px;
+}
+.pdf-export-mode .chart-box h3{
+    font-size:12px;
+    margin-bottom:6px;
+}
+.pdf-export-mode .chart-box canvas{
+    height:140px!important;
+    max-height:140px;
+}
+.pdf-export-mode .chart-filters{
+    display:none;
+}
+
+.pdf-export-mode .planner-container{
+    width:100%;
+}
+.pdf-export-mode .planner-month-title{
+    font-size:13px;
+    padding:4px 0;
+    margin-bottom:4px;
+    page-break-before:auto;
+    page-break-after:avoid;
+}
+.pdf-export-mode .planner-box{
+    page-break-inside:avoid;
+    margin-bottom:6px;
+    font-size:10px;
+}
+.pdf-export-mode .planner-box table.planner{
+    font-size:9px;
+}
+.pdf-export-mode .planner-box th,
+.pdf-export-mode .planner-box td{
+    padding:3px 2px;
+    height:auto;
+    font-size:9px;
+}
+.pdf-export-mode .planner-box th.member-name,
+.pdf-export-mode .planner-box td.member-name{
+    font-size:9px;
+    padding-left:6px;
+}
+
+.pdf-export-mode h1{
+    font-size:18px;
+    margin:6px 0;
+}
+.pdf-export-mode .logo-img{
+    height:40px;
+}
+.pdf-export-mode .logo-box{
+    padding:10px 0;
+    margin-bottom:8px;
+}
+
+/* Gestione pagine per calendari */
+.pdf-export-mode #plannersContainer > div:nth-child(3n+1){
+    page-break-before:auto;
+}
+.pdf-export-mode #plannersContainer > div:nth-child(3n){
+    page-break-after:auto;
+}
+.pdf-export-mode #plannersContainer > div:nth-child(3n+3){
+    page-break-after:always;
+}
+
 /* ================= DARK MODE TH ================= */
 [data-theme="dark"] th{
     background:#173B54;
@@ -623,6 +742,197 @@ td.afternoon-partial{background:#e6dbff;color:#4b2dbf;font-weight:600}
 [data-theme="dark"] #dashboardTable th{
     background:#173B54;
     color:#f1f5f9;
+}
+
+/* ================= INSERISCI FERIE BUTTON ================= */
+.insert-holidays-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 13rem;
+    height: 3rem;
+    overflow: hidden;
+    background-size: 300% 300%;
+    cursor: pointer;
+    backdrop-filter: blur(1rem);
+    border-radius: 5rem;
+    transition: 0.5s;
+    animation: gradient_holidays 5s ease infinite;
+    border: double 4px transparent;
+    background-image: linear-gradient(#172754, #172754),
+        linear-gradient(137.48deg, #60a5fa 10%, #3b82f6 45%, #2563eb 67%, #172754 87%);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+    margin: 20px auto;
+    position: relative;
+}
+
+.insert-holidays-btn:hover {
+    transform: scale(1.1);
+}
+
+.insert-holidays-btn:active {
+    border: double 4px #3b82f6;
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+    animation: none;
+}
+
+.btn-stars-container {
+    position: absolute;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    transition: 0.5s;
+    backdrop-filter: blur(1rem);
+    border-radius: 5rem;
+}
+
+.insert-holidays-btn:hover .btn-stars-container {
+    z-index: 1;
+    background-color: #172754;
+}
+
+.btn-text {
+    z-index: 2;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #ffffff;
+    text-shadow: 0 0 4px white;
+}
+
+.btn-glow {
+    position: absolute;
+    display: flex;
+    width: 12rem;
+}
+
+.glow-circle {
+    width: 100%;
+    height: 30px;
+    filter: blur(2rem);
+    animation: pulse_glow 4s infinite;
+    z-index: -1;
+}
+
+.glow-circle:nth-of-type(1) {
+    background: rgba(59, 130, 246, 0.6);
+}
+
+.glow-circle:nth-of-type(2) {
+    background: rgba(37, 99, 235, 0.7);
+}
+
+.insert-holidays-btn:active .glow-circle {
+    background: #3b82f6;
+}
+
+.btn-stars {
+    position: relative;
+    background: transparent;
+    width: 200rem;
+    height: 200rem;
+}
+
+.btn-stars::after {
+    content: "";
+    position: absolute;
+    top: -10rem;
+    left: -100rem;
+    width: 100%;
+    height: 100%;
+    animation: animStarRotate 90s linear infinite;
+    background-image: radial-gradient(#ffffff 1px, transparent 1%);
+    background-size: 50px 50px;
+}
+
+.btn-stars::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -50%;
+    width: 170%;
+    height: 500%;
+    animation: animStar 60s linear infinite;
+    background-image: radial-gradient(#ffffff 1px, transparent 1%);
+    background-size: 50px 50px;
+    opacity: 0.5;
+}
+
+@keyframes animStar {
+    from { transform: translateY(0); }
+    to { transform: translateY(-135rem); }
+}
+
+@keyframes animStarRotate {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0); }
+}
+
+@keyframes gradient_holidays {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse_glow {
+    0% {
+        transform: scale(0.75);
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+    }
+    100% {
+        transform: scale(0.75);
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    }
+}
+
+/* ================= PRESIDIO SABATO ================= */
+.presidio-cell {
+    background: #1e3a8a !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+}
+
+/* ================= SELEZIONE MULTIPLA ================= */
+.cell-selected {
+    outline: 3px solid #3b82f6!important;
+    outline-offset: -3px;
+    background: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* ================= CORONA ICON ================= */
+.crown-icon {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 30px;
+    color: #fbbf24;
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+    animation: crown-shine 2s ease-in-out infinite;
+}
+
+@keyframes crown-shine {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+kbd {
+    background: #e5e7eb;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-family: monospace;
+}
+
+[data-theme="dark"] kbd {
+    background: #374151;
+    color: #f3f4f6;
 }
 
 </style>
@@ -651,7 +961,22 @@ td.afternoon-partial{background:#e6dbff;color:#4b2dbf;font-weight:600}
     </button>
 </div>
 
-<h1>Planner Annuale 2026</h1>
+<h1>Planner Annuale <span id="yearLabel">2026</span></h1>
+
+<div style="display:flex;justify-content:center;gap:10px;margin-bottom:16px;">
+    <button class="nav-btn" onclick="changeYear(-1)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Anno Prec.
+    </button>
+    <button class="nav-btn" onclick="changeYear(1)">
+        Anno Succ.
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+    </button>
+</div>
 
 <div class="calendar-header">
     <button class="nav-btn" onclick="prevMonth()">
@@ -672,7 +997,24 @@ td.afternoon-partial{background:#e6dbff;color:#4b2dbf;font-weight:600}
     <button class="view-btn" onclick="setView('quarter',this)">Trimestre</button>
     <button class="view-btn" onclick="setView('half',this)">Semestre</button>
     <button class="view-btn" onclick="setView('year',this)">Anno</button>
+    <button class="view-btn" onclick="exportToPDF()">⬇︎ PDF</button>
     <button class="view-btn" onclick="exportToExcel()">⬇︎ Excel</button>
+</div>
+
+<!-- Bottone Inserisci Ferie Animato -->
+<button class="insert-holidays-btn" onclick="openRangeModal()">
+    <div class="btn-stars-container">
+        <div class="btn-stars"></div>
+    </div>
+    <div class="btn-glow">
+        <div class="glow-circle"></div>
+        <div class="glow-circle"></div>
+    </div>
+    <span class="btn-text">INSERISCI FERIE</span>
+</button>
+
+<div style="text-align:center;color:#6b7280;font-size:13px;margin:-10px 0 20px 0;">
+    💡 <strong>Suggerimento:</strong> <kbd style="background:#e5e7eb;padding:2px 6px;border-radius:4px;font-weight:600;">SHIFT + Click</kbd> su 2 celle per selezione multipla, poi click su una cella evidenziata per le azioni
 </div>
 
 <div class="page-wrapper" id="pageWrapper">
@@ -734,31 +1076,43 @@ td.afternoon-partial{background:#e6dbff;color:#4b2dbf;font-weight:600}
 <!-- MODALE -->
 <div id="modal" class="modal-overlay" onclick="closeModal()">
   <div class="modal-panel" onclick="event.stopPropagation()">
-    <div class="modal-title">Imposta ferie</div>
+    <div class="modal-title" id="modalTitle">Imposta ferie</div>
     <div class="modal-subtitle" id="modalDate"></div>
 
-    <button class="btn-full-day" onclick="applyValue('8')">Giornata intera · 8 ore</button>
+    <div id="normalContent">
+        <button class="btn-full-day" onclick="applyValue('8')">Giornata intera · 8 ore</button>
 
-    <div class="modal-section">
-        <div class="modal-section-title">Mattina (08:00 – 13:00)</div>
-        <div class="modal-hours">
-            <button class="hour-btn" onclick="applyValue('1 M')">1 ora</button>
-            <button class="hour-btn" onclick="applyValue('2 M')">2 ore</button>
-            <button class="hour-btn" onclick="applyValue('3 M')">3 ore</button>
-            <button class="hour-btn" onclick="applyValue('4 M')">4 ore</button>
-            <button class="hour-btn" onclick="applyValue('5 M')">5 ore</button>
+        <div class="modal-section">
+            <div class="modal-section-title">Mattina (08:00 – 13:00)</div>
+            <div class="modal-hours">
+                <button class="hour-btn" onclick="applyValue('1 M')">1 ora</button>
+                <button class="hour-btn" onclick="applyValue('2 M')">2 ore</button>
+                <button class="hour-btn" onclick="applyValue('3 M')">3 ore</button>
+                <button class="hour-btn" onclick="applyValue('4 M')">4 ore</button>
+                <button class="hour-btn" onclick="applyValue('5 M')">5 ore</button>
+            </div>
+        </div>
+
+        <div class="modal-section">
+            <div class="modal-section-title">Pomeriggio (14:00 – 19:00)</div>
+            <div class="modal-hours">
+                <button class="hour-btn" onclick="applyValue('1 P')">1 ora</button>
+                <button class="hour-btn" onclick="applyValue('2 P')">2 ore</button>
+                <button class="hour-btn" onclick="applyValue('3 P')">3 ore</button>
+                <button class="hour-btn" onclick="applyValue('4 P')">4 ore</button>
+                <button class="hour-btn" onclick="applyValue('5 P')">5 ore</button>
+            </div>
         </div>
     </div>
 
-    <div class="modal-section">
-        <div class="modal-section-title">Pomeriggio (14:00 – 19:00)</div>
-        <div class="modal-hours">
-            <button class="hour-btn" onclick="applyValue('1 P')">1 ora</button>
-            <button class="hour-btn" onclick="applyValue('2 P')">2 ore</button>
-            <button class="hour-btn" onclick="applyValue('3 P')">3 ore</button>
-            <button class="hour-btn" onclick="applyValue('4 P')">4 ore</button>
-            <button class="hour-btn" onclick="applyValue('5 P')">5 ore</button>
+    <!-- Contenuto per Presidio Sabato -->
+    <div id="presidioContent" style="display:none;">
+        <div class="modal-section">
+            <div class="modal-section-title">Release Allianz</div>
+            <input type="number" id="presidioInput" placeholder="N. release" 
+                   style="width:100%;box-sizing:border-box;padding:10px;border:2px solid #3b82f6;border-radius:8px;font-size:14px;margin-top:8px;">
         </div>
+        <button class="btn-full-day" onclick="applyPresidio()" style="margin-top:12px;">Conferma</button>
     </div>
 
     <div class="modal-footer">
@@ -768,23 +1122,76 @@ td.afternoon-partial{background:#e6dbff;color:#4b2dbf;font-weight:600}
   </div>
 </div>
 
+<!-- MODALE RANGE FERIE -->
+<div id="rangeModal" class="modal-overlay" onclick="closeRangeModal()">
+  <div class="modal-panel" onclick="event.stopPropagation()">
+    <div class="modal-title">✨ Inserisci Range Ferie</div>
+    <div class="modal-subtitle">Seleziona utente e periodo</div>
+
+    <div class="modal-section">
+        <div class="modal-section-title">Utente</div>
+        <select id="rangeUser" style="width:100%;box-sizing:border-box;padding:10px;border:2px solid #3b82f6;border-radius:8px;font-size:14px;margin-top:6px;background:white;">
+            <option value="">-- Scegli --</option>
+        </select>
+    </div>
+
+    <div class="modal-section">
+        <div class="modal-section-title">Data Inizio</div>
+        <input type="date" id="rangeStart" style="width:100%;box-sizing:border-box;padding:10px;border:2px solid #3b82f6;border-radius:8px;font-size:14px;margin-top:6px;">
+    </div>
+
+    <div class="modal-section">
+        <div class="modal-section-title">Data Fine</div>
+        <input type="date" id="rangeEnd" style="width:100%;box-sizing:border-box;padding:10px;border:2px solid #3b82f6;border-radius:8px;font-size:14px;margin-top:6px;">
+    </div>
+
+    <button class="btn-full-day" onclick="applyRangeHolidays()" style="margin-top:12px;">Applica Ferie</button>
+
+    <div class="modal-footer">
+        <button class="cancel-btn" onclick="closeRangeModal()">Annulla</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ================= JS CON FIREBASE ================= */
 const users=["Damiano","Gianluca","Gregorio","Leonardo","Samuela","Simone"];
-const months=[
- {n:"Gennaio",s:"Gen",d:31,h:[1,6]},
- {n:"Febbraio",s:"Feb",d:28,h:[]},
- {n:"Marzo",s:"Mar",d:31,h:[]},
- {n:"Aprile",s:"Apr",d:30,h:[25]},
- {n:"Maggio",s:"Mag",d:31,h:[1]},
- {n:"Giugno",s:"Giu",d:30,h:[2]},
- {n:"Luglio",s:"Lug",d:31,h:[]},
- {n:"Agosto",s:"Ago",d:31,h:[15]},
- {n:"Settembre",s:"Set",d:30,h:[]},
- {n:"Ottobre",s:"Ott",d:31,h:[]},
- {n:"Novembre",s:"Nov",d:30,h:[1]},
- {n:"Dicembre",s:"Dic",d:31,h:[8,25,26]}
-];
+
+// Dati mesi per anno - festività Italia
+const yearsData = {
+    2026: [
+        {n:"Gennaio",s:"Gen",d:31,h:[1,6]},
+        {n:"Febbraio",s:"Feb",d:28,h:[]},
+        {n:"Marzo",s:"Mar",d:31,h:[]},
+        {n:"Aprile",s:"Apr",d:30,h:[25]},
+        {n:"Maggio",s:"Mag",d:31,h:[1]},
+        {n:"Giugno",s:"Giu",d:30,h:[2]},
+        {n:"Luglio",s:"Lug",d:31,h:[]},
+        {n:"Agosto",s:"Ago",d:31,h:[15]},
+        {n:"Settembre",s:"Set",d:30,h:[]},
+        {n:"Ottobre",s:"Ott",d:31,h:[]},
+        {n:"Novembre",s:"Nov",d:30,h:[1]},
+        {n:"Dicembre",s:"Dic",d:31,h:[8,25,26]}
+    ],
+    2027: [
+        {n:"Gennaio",s:"Gen",d:31,h:[1,6]},
+        {n:"Febbraio",s:"Feb",d:28,h:[]},
+        {n:"Marzo",s:"Mar",d:31,h:[]},
+        {n:"Aprile",s:"Apr",d:30,h:[25]},
+        {n:"Maggio",s:"Mag",d:31,h:[1]},
+        {n:"Giugno",s:"Giu",d:30,h:[2]},
+        {n:"Luglio",s:"Lug",d:31,h:[]},
+        {n:"Agosto",s:"Ago",d:31,h:[15]},
+        {n:"Settembre",s:"Set",d:30,h:[]},
+        {n:"Ottobre",s:"Ott",d:31,h:[]},
+        {n:"Novembre",s:"Nov",d:30,h:[1]},
+        {n:"Dicembre",s:"Dic",d:31,h:[8,25,26]}
+    ]
+};
+
+let currentYear = new Date().getFullYear(); // Anno corrente dinamico
+if(!yearsData[currentYear]) currentYear = 2026; // Fallback se anno non disponibile
+let months = yearsData[currentYear];
 
 let currentMonth = new Date().getMonth(); // Mese corrente dinamico (0=Gennaio, 1=Febbraio, etc.)
 let viewMode="month";
@@ -793,7 +1200,16 @@ let chart=null;
 let dataCache = {};
 let activeFilters = new Set(users);
 
-const parseHours=v=>!v?0:(v==="8"?8:parseInt(v));
+// Selezione multipla
+let selectedCells = [];
+let lastClickedCell = null;
+
+const parseHours=v=>{
+    if(!v) return 0;
+    if(v.startsWith && v.startsWith('P-')) return 0; // Presidio non conta come ferie
+    if(v==="8") return 8;
+    return parseInt(v);
+};
 const parseDays=v=>parseHours(v)/8;
 
 // Palette colori pastello ben distinti per gli utenti
@@ -851,7 +1267,7 @@ async function getFirebaseValue(key) {
     }
     
     try {
-        const dbRef = window.firebaseDB.ref(`ferie2026/${key}`);
+        const dbRef = window.firebaseDB.ref(`ferie${currentYear}/${key}`);
         const snapshot = await window.firebaseDB.get(dbRef);
         const value = snapshot.exists() ? snapshot.val() : "";
         dataCache[key] = value;
@@ -864,7 +1280,7 @@ async function getFirebaseValue(key) {
 
 async function setFirebaseValue(key, value) {
     try {
-        const dbRef = window.firebaseDB.ref(`ferie2026/${key}`);
+        const dbRef = window.firebaseDB.ref(`ferie${currentYear}/${key}`);
         if (value) {
             await window.firebaseDB.set(dbRef, value);
             dataCache[key] = value;
@@ -878,7 +1294,7 @@ async function setFirebaseValue(key, value) {
 }
 
 function setupRealtimeListener() {
-    const dbRef = window.firebaseDB.ref('ferie2026');
+    const dbRef = window.firebaseDB.ref(`ferie${currentYear}`);
     window.firebaseDB.onValue(dbRef, (snapshot) => {
         if (snapshot.exists()) {
             const data = snapshot.val();
@@ -892,7 +1308,7 @@ function setupRealtimeListener() {
 
 async function loadAllData() {
     try {
-        const dbRef = window.firebaseDB.ref('ferie2026');
+        const dbRef = window.firebaseDB.ref(`ferie${currentYear}`);
         const snapshot = await window.firebaseDB.get(dbRef);
         if (snapshot.exists()) {
             dataCache = snapshot.val();
@@ -913,7 +1329,7 @@ function calculateStats(){
         userDays[u] = 0;
         months.forEach((m, mi) => {
             for(let d = 1; d <= m.d; d++){
-                const key = `${u}-${mi}-${d}`;
+                const key = `${u}-${currentYear}-${mi}-${d}`;
                 const days = parseDays(dataCache[key]);
                 totalDays += days;
                 userDays[u] += days;
@@ -934,7 +1350,7 @@ function calculateStats(){
     document.getElementById('peakDays').textContent = monthDays[maxMonthIdx].toFixed(1) + ' giorni';
     
     const maxUser = Object.keys(userDays).reduce((a, b) => userDays[a] > userDays[b] ? a : b);
-    document.getElementById('topUser').textContent = maxUser;
+    document.getElementById('topUser').innerHTML = maxUser + '<span class="crown-icon">👑</span>';
     document.getElementById('topUserDays').textContent = userDays[maxUser].toFixed(1) + ' giorni';
 }
 
@@ -996,7 +1412,7 @@ function renderChart(){
                 data: months.map((m, mi) => {
                     let days = 0;
                     for(let d = 1; d <= m.d; d++){
-                        const key = `${u}-${mi}-${d}`;
+                        const key = `${u}-${currentYear}-${mi}-${d}`;
                         days += parseDays(dataCache[key]);
                     }
                     return days;
@@ -1150,7 +1566,7 @@ function renderPlanner(){
     cont.innerHTML="";
 
     document.getElementById("monthLabel").textContent=
-        months[currentMonth].n+" 2026";
+        months[currentMonth].n+" "+currentYear;
 
     let idxs=[currentMonth];
     if(viewMode==="quarter"){
@@ -1161,7 +1577,7 @@ function renderPlanner(){
         idxs=currentMonth<6?[0,1,2,3,4,5]:[6,7,8,9,10,11];
     }
     if(viewMode==="year"){
-        idxs=[...Array(12).keys()];
+        idxs=[0,1,2,3,4,5,6,7,8,9,10,11];
     }
 
     idxs.forEach(mi=>{
@@ -1170,20 +1586,20 @@ function renderPlanner(){
         // Aggiungo titolo mese sopra ogni planner
         let html='';
         if(viewMode !== 'month'){
-            html+=`<div class="planner-month-title">${m.n} 2026</div>`;
+            html+=`<div class="planner-month-title">${m.n} ${currentYear}</div>`;
         }
         
         html+=`<div class="planner-box"><table class="planner"><thead>
         <tr class="weekday-row">
-            <th class="member-name" rowspan="2">Utenti</th>`;
+            <th class="member-name" rowspan="2">Membro</th>`;
 
         for(let d=1;d<=m.d;d++){
-            html+=`<th>${["dom","lun","mar","mer","gio","ven","sab"][new Date(2026,mi,d).getDay()]}</th>`;
+            html+=`<th>${["dom","lun","mar","mer","gio","ven","sab"][new Date(currentYear,mi,d).getDay()]}</th>`;
         }
 
         html+=`</tr><tr>`;
         for(let d=1;d<=m.d;d++){
-            const wd=new Date(2026,mi,d).getDay();
+            const wd=new Date(currentYear,mi,d).getDay();
             html+=`<th class="${wd===0||wd===6||m.h.includes(d)?"holiday-col":""}">${d}</th>`;
         }
         html+=`</tr></thead><tbody>`;
@@ -1191,17 +1607,34 @@ function renderPlanner(){
         users.forEach(u=>{
             html+=`<tr><td class="member-name">${u}</td>`;
             for(let d=1;d<=m.d;d++){
-                const wd=new Date(2026,mi,d).getDay();
-                const key=`${u}-${mi}-${d}`;
+                const wd=new Date(currentYear,mi,d).getDay();
+                const key=`${u}-${currentYear}-${mi}-${d}`;
                 const v=dataCache[key]||"";
-                if(wd===0||wd===6||m.h.includes(d)){
+                
+                // Domeniche e festivi: non editabili
+                if(wd===0||m.h.includes(d)){
                     html+=`<td class="holiday-col"></td>`;
-                }else{
+                }
+                // Sabati: editabili per presidio
+                else if(wd===6){
+                    let displayValue = v;
+                    let cls = "editable holiday-col"; // Default giallo come domenica
+                    
+                    // Se ha presidio (P-), diventa blu scuro
+                    if(v.startsWith('P-')){
+                        displayValue = v.substring(2);
+                        cls = "editable presidio-cell";
+                    }
+                    
+                    html+=`<td class="${cls}" onclick="handleCellClick(event, this,'${key}',${d},${mi},true)" data-key="${key}">${displayValue}</td>`;
+                }
+                // Altri giorni: ferie normali
+                else{
                     let cls="editable";
                     if(v==="8")cls+=" full-day";
                     if(v.endsWith("M"))cls+=" morning-partial";
                     if(v.endsWith("P"))cls+=" afternoon-partial";
-                    html+=`<td class="${cls}" onclick="openModal(this,'${key}',${d},${mi})">${v}</td>`;
+                    html+=`<td class="${cls}" onclick="handleCellClick(event, this,'${key}',${d},${mi},false)" data-key="${key}">${v}</td>`;
                 }
             }
             html+=`</tr>`;
@@ -1219,7 +1652,7 @@ function renderDashboard(){
         let days=0;
         months.forEach((m,mi)=>{
             for(let d=1;d<=m.d;d++){
-                const key = `${u}-${mi}-${d}`;
+                const key = `${u}-${currentYear}-${mi}-${d}`;
                 days+=parseDays(dataCache[key]);
             }
         });
@@ -1233,10 +1666,197 @@ function renderDashboard(){
 
 // ================= MODAL FUNCTIONS =================
 
-function openModal(td,key,day,month){
+// ================= MODALE E SELEZIONE =================
+
+function handleCellClick(event, td, key, day, month, isSaturday){
+    // Se SHIFT è premuto, gestisci selezione
+    if(event.shiftKey){
+        event.preventDefault();
+        
+        // Se è la prima cella con SHIFT
+        if(selectedCells.length === 0){
+            selectedCells.push({ td: td, key: key });
+            td.classList.add('cell-selected');
+            lastClickedCell = td;
+        }
+        // Se c'è già una cella selezionata, seleziona range
+        else if(lastClickedCell){
+            selectRange(lastClickedCell, td);
+        }
+        return;
+    }
+    
+    // Click normale - se la cella è già selezionata, mostra popup azioni
+    if(td.classList.contains('cell-selected')){
+        showSelectionActionsPopup();
+        return;
+    }
+    
+    // Click normale su cella non selezionata - deseleziona tutto e apri modale
+    clearSelection();
+    lastClickedCell = td;
+    openModal(td, key, day, month, isSaturday);
+}
+
+function selectRange(startCell, endCell){
+    // Trova tutte le celle tra start e end
+    const allCells = Array.from(document.querySelectorAll('.editable:not(.holiday-col), .editable.presidio-cell'));
+    const startIdx = allCells.indexOf(startCell);
+    const endIdx = allCells.indexOf(endCell);
+    
+    if(startIdx === -1 || endIdx === -1) return;
+    
+    const minIdx = Math.min(startIdx, endIdx);
+    const maxIdx = Math.max(startIdx, endIdx);
+    
+    clearSelection();
+    
+    for(let i = minIdx; i <= maxIdx; i++){
+        const cell = allCells[i];
+        selectedCells.push({
+            td: cell,
+            key: cell.getAttribute('data-key')
+        });
+        cell.classList.add('cell-selected');
+    }
+    
+    lastClickedCell = endCell;
+}
+
+function showSelectionActionsPopup(){
+    // Chiudi qualsiasi popup esistente
+    const existing = document.getElementById('selectionActionsPopup');
+    if(existing) existing.remove();
+    
+    const popup = document.createElement('div');
+    popup.id = 'selectionActionsPopup';
+    popup.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 24px;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        z-index: 1001;
+        min-width: 320px;
+    `;
+    
+    popup.innerHTML = `
+        <div style="font-size: 18px; font-weight: 700; color: #172754; margin-bottom: 8px;">
+            ${selectedCells.length} celle selezionate
+        </div>
+        <div style="font-size: 13px; color: #6b7280; margin-bottom: 20px;">
+            Scegli un'azione da applicare a tutte le celle
+        </div>
+        <button onclick="applyMultipleValue('8')" style="
+            width: 100%;
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 10px;
+        ">✓ Imposta Giornata Intera (8h)</button>
+        <button onclick="clearMultipleValues()" style="
+            width: 100%;
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 10px;
+        ">✕ Rimuovi Valori</button>
+        <button onclick="clearSelection()" style="
+            width: 100%;
+            background: transparent;
+            color: #6b7280;
+            border: 2px solid #d1d5db;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        ">Annulla Selezione</button>
+    `;
+    
+    // Overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'selectionActionsOverlay';
+    overlay.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+    `;
+    overlay.onclick = closeSelectionActionsPopup; // Solo chiude popup, celle rimangono selezionate
+    
+    document.body.appendChild(overlay);
+    document.body.appendChild(popup);
+}
+
+function closeSelectionActionsPopup(){
+    const popup = document.getElementById('selectionActionsPopup');
+    const overlay = document.getElementById('selectionActionsOverlay');
+    if(popup) popup.remove();
+    if(overlay) overlay.remove();
+    // NON deselezionare le celle - rimangono selezionate
+}
+
+function clearSelection(){
+    selectedCells.forEach(cell => {
+        cell.td.classList.remove('cell-selected');
+    });
+    selectedCells = [];
+    lastClickedCell = null;
+    // Chiudi popup se aperto
+    closeSelectionActionsPopup();
+}
+
+async function applyMultipleValue(value){
+    for(let cell of selectedCells){
+        cell.td.textContent = value;
+        await setFirebaseValue(cell.key, value);
+    }
+    closeSelectionActionsPopup();
+    clearSelection();
+    render();
+}
+
+async function clearMultipleValues(){
+    for(let cell of selectedCells){
+        cell.td.textContent = '';
+        await setFirebaseValue(cell.key, '');
+    }
+    closeSelectionActionsPopup();
+    clearSelection();
+    render();
+}
+
+function openModal(td,key,day,month,isSaturday){
     activeCell={td,key};
     document.getElementById("modalDate").textContent=
-        `${day} ${months[month].n} 2026`;
+        `${day} ${months[month].n} ${currentYear}`;
+    
+    // Se è sabato, mostra contenuto presidio
+    if(isSaturday){
+        document.getElementById("modalTitle").textContent = "Presidio Allianz";
+        document.getElementById("normalContent").style.display = "none";
+        document.getElementById("presidioContent").style.display = "block";
+        document.getElementById("presidioInput").value = td.textContent || "";
+    } else {
+        document.getElementById("modalTitle").textContent = "Imposta ferie";
+        document.getElementById("normalContent").style.display = "block";
+        document.getElementById("presidioContent").style.display = "none";
+    }
+    
     document.getElementById("modal").style.display="flex";
 }
 
@@ -1254,6 +1874,88 @@ async function applyValue(v){
     render();
 }
 
+async function applyPresidio(){
+    if(!activeCell)return;
+    
+    const presidioNum = document.getElementById("presidioInput").value;
+    if(presidioNum){
+        activeCell.td.textContent = presidioNum;
+        await setFirebaseValue(activeCell.key, 'P-' + presidioNum);
+        closeModal();
+        render();
+    } else {
+        alert("Inserisci un numero release");
+    }
+}
+
+// ================= RANGE FERIE MODAL =================
+
+function openRangeModal(){
+    // Popola select utenti
+    const select = document.getElementById("rangeUser");
+    select.innerHTML = '<option value="">-- Scegli utente --</option>';
+    users.forEach(u => {
+        const option = document.createElement("option");
+        option.value = u;
+        option.textContent = u;
+        select.appendChild(option);
+    });
+    
+    // Imposta date di default
+    const today = new Date();
+    document.getElementById("rangeStart").value = today.toISOString().split('T')[0];
+    document.getElementById("rangeEnd").value = today.toISOString().split('T')[0];
+    
+    document.getElementById("rangeModal").style.display = "flex";
+}
+
+function closeRangeModal(){
+    document.getElementById("rangeModal").style.display = "none";
+}
+
+async function applyRangeHolidays(){
+    const user = document.getElementById("rangeUser").value;
+    const startDate = new Date(document.getElementById("rangeStart").value);
+    const endDate = new Date(document.getElementById("rangeEnd").value);
+    
+    if(!user){
+        alert("Seleziona un utente");
+        return;
+    }
+    
+    if(startDate > endDate){
+        alert("La data di inizio deve essere precedente alla data di fine");
+        return;
+    }
+    
+    // Itera su tutte le date del range
+    let currentDate = new Date(startDate);
+    let count = 0;
+    
+    while(currentDate <= endDate){
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const day = currentDate.getDate();
+        const dayOfWeek = currentDate.getDay();
+        
+        // Salta weekend e festivi
+        if(year === currentYear){
+            const monthData = months[month];
+            if(dayOfWeek !== 0 && dayOfWeek !== 6 && !monthData.h.includes(day)){
+                const key = `${user}-${currentYear}-${month}-${day}`;
+                await setFirebaseValue(key, '8');
+                count++;
+            }
+        }
+        
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    closeRangeModal();
+    render();
+    alert(`Inserite ${count} giornate di ferie per ${user}`);
+}
+
 // ================= NAVIGATION =================
 
 function nextMonth(){
@@ -1266,23 +1968,240 @@ function prevMonth(){
     render();
 }
 
+function changeYear(delta){
+    const newYear = currentYear + delta;
+    if(yearsData[newYear]){
+        currentYear = newYear;
+        months = yearsData[currentYear];
+        document.getElementById('yearLabel').textContent = currentYear;
+        // Svuota cache e ricarica dati per il nuovo anno
+        dataCache = {};
+        loadAllData().then(() => {
+            setupRealtimeListener();
+            render();
+        });
+    }
+}
+
 // ================= EXPORT TO EXCEL =================
 
 function exportToExcel(){
     const wb=XLSX.utils.book_new();
     months.forEach((m,mi)=>{
-        const aoa=[["Utente",...Array.from({length:m.d},(_,i)=>i+1)]];
+        const aoa=[["Membro",...Array.from({length:m.d},(_,i)=>i+1)]];
         users.forEach(u=>{
             const row=[u];
             for(let d=1;d<=m.d;d++){
-                const key = `${u}-${mi}-${d}`;
+                const key = `${u}-${currentYear}-${mi}-${d}`;
                 row.push(dataCache[key]||"");
             }
             aoa.push(row);
         });
         XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), m.n);
     });
-    XLSX.writeFile(wb,"Planner_Ferie_2026.xlsx");
+    XLSX.writeFile(wb,`Planner_Ferie_${currentYear}.xlsx`);
+}
+
+// ================= EXPORT TO PDF =================
+
+function exportToPDF(){
+    // Determina nome file
+    let fileName = `Planner_Ferie_2026`;
+    if(viewMode === 'month'){
+        fileName = `Planner_Ferie_${months[currentMonth].n}_2026`;
+    } else if(viewMode === 'quarter'){
+        const q = Math.floor(currentMonth/3) + 1;
+        fileName = `Planner_Ferie_Q${q}_2026`;
+    } else if(viewMode === 'half'){
+        const h = currentMonth < 6 ? 1 : 2;
+        fileName = `Planner_Ferie_Semestre${h}_2026`;
+    }
+    
+    // Determina quali mesi includere
+    let monthsToExport = [currentMonth];
+    if(viewMode === 'quarter'){
+        const s = Math.floor(currentMonth/3)*3;
+        monthsToExport = [s, s+1, s+2];
+    } else if(viewMode === 'half'){
+        monthsToExport = currentMonth < 6 ? [0,1,2,3,4,5] : [6,7,8,9,10,11];
+    } else if(viewMode === 'year'){
+        monthsToExport = [0,1,2,3,4,5,6,7,8,9,10,11];
+    }
+    
+    // Calcola statistiche
+    let totalDays = 0;
+    let userDays = {};
+    let monthDays = Array(12).fill(0);
+    
+    users.forEach(u => {
+        userDays[u] = 0;
+        months.forEach((m, mi) => {
+            for(let d = 1; d <= m.d; d++){
+                const key = u + '-' + currentYear + '-' + mi + '-' + d;
+                const days = parseDays(dataCache[key] || "");
+                totalDays += days;
+                userDays[u] += days;
+                monthDays[mi] += days;
+            }
+        });
+    });
+    
+    const avgDays = totalDays / users.length;
+    const maxMonthIdx = monthDays.indexOf(Math.max(...monthDays));
+    const maxUser = users.reduce((a, b) => userDays[a] > userDays[b] ? a : b);
+    
+    // Costruisci HTML
+    let html = '<div style="font-family:Arial,sans-serif;padding:20px;background:white;">';
+    
+    // Titolo
+    html += '<h1 style="text-align:center;color:#172754;font-size:24px;margin-bottom:20px;">Planner Annuale ' + currentYear + '</h1>';
+    
+    // Stats
+    html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">';
+    html += '<div style="border:1px solid #ddd;border-left:3px solid #172754;padding:10px;border-radius:5px;">';
+    html += '<div style="font-size:10px;color:#666;text-transform:uppercase;">TOTALE GIORNI</div>';
+    html += '<div style="font-size:20px;font-weight:bold;color:#172754;margin:5px 0;">' + totalDays.toFixed(1) + '</div>';
+    html += '<div style="font-size:11px;color:#666;">' + (totalDays * 8).toFixed(0) + ' ore</div>';
+    html += '</div>';
+    
+    html += '<div style="border:1px solid #ddd;border-left:3px solid #172754;padding:10px;border-radius:5px;">';
+    html += '<div style="font-size:10px;color:#666;text-transform:uppercase;">MEDIA PER PERSONA</div>';
+    html += '<div style="font-size:20px;font-weight:bold;color:#172754;margin:5px 0;">' + avgDays.toFixed(1) + '</div>';
+    html += '<div style="font-size:11px;color:#666;">' + (avgDays * 8).toFixed(0) + ' ore</div>';
+    html += '</div>';
+    
+    html += '<div style="border:1px solid #ddd;border-left:3px solid #172754;padding:10px;border-radius:5px;">';
+    html += '<div style="font-size:10px;color:#666;text-transform:uppercase;">MESE CON PIÙ FERIE</div>';
+    html += '<div style="font-size:20px;font-weight:bold;color:#172754;margin:5px 0;">' + months[maxMonthIdx].n + '</div>';
+    html += '<div style="font-size:11px;color:#666;">' + monthDays[maxMonthIdx].toFixed(1) + ' giorni</div>';
+    html += '</div>';
+    
+    html += '<div style="border:1px solid #ddd;border-left:3px solid #172754;padding:10px;border-radius:5px;">';
+    html += '<div style="font-size:10px;color:#666;text-transform:uppercase;">UTENTE CON PIÙ FERIE</div>';
+    html += '<div style="font-size:20px;font-weight:bold;color:#172754;margin:5px 0;">' + maxUser + '</div>';
+    html += '<div style="font-size:11px;color:#666;">' + userDays[maxUser].toFixed(1) + ' giorni</div>';
+    html += '</div>';
+    html += '</div>';
+    
+    // Tabella totali
+    html += '<table style="width:100%;border-collapse:collapse;margin-bottom:20px;">';
+    html += '<thead><tr>';
+    html += '<th style="background:#dbeafe;color:#172754;padding:8px;border:1px solid #ccc;font-size:12px;">Utente</th>';
+    html += '<th style="background:#dbeafe;color:#172754;padding:8px;border:1px solid #ccc;font-size:12px;">Giorni</th>';
+    html += '<th style="background:#dbeafe;color:#172754;padding:8px;border:1px solid #ccc;font-size:12px;">Ore</th>';
+    html += '</tr></thead><tbody>';
+    
+    users.forEach(u => {
+        html += '<tr>';
+        html += '<td style="padding:8px;border:1px solid #ccc;font-weight:bold;font-size:12px;">' + u + '</td>';
+        html += '<td style="padding:8px;border:1px solid #ccc;text-align:center;font-size:12px;">' + userDays[u].toFixed(1) + '</td>';
+        html += '<td style="padding:8px;border:1px solid #ccc;text-align:center;font-size:12px;">' + (userDays[u] * 8).toFixed(0) + '</td>';
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+    
+    // Calendari
+    monthsToExport.forEach((mi, idx) => {
+        const m = months[mi];
+        
+        if(idx > 0 && idx % 2 === 0){
+            html += '<div style="page-break-before:always;"></div>';
+        }
+        
+        html += '<div style="margin-bottom:15px;page-break-inside:avoid;">';
+        html += '<div style="background:#eff3ff;color:#172754;font-size:13px;font-weight:bold;text-align:center;padding:6px;border-bottom:2px solid #172754;">' + m.n + ' ' + currentYear + '</div>';
+        html += '<table style="width:100%;border-collapse:collapse;font-size:7px;table-layout:fixed;">';
+        html += '<thead><tr><th rowspan="2" style="background:#dbeafe;color:#172754;border:1px solid #ddd;padding:2px;font-weight:bold;font-size:7px;width:45px;">Utente</th>';
+        
+        for(let d = 1; d <= m.d; d++){
+            const dayName = ["d","l","m","m","g","v","s"][new Date(currentYear, mi, d).getDay()];
+            html += '<th style="background:#dbeafe;color:#172754;border:1px solid #ddd;padding:0px;font-weight:bold;font-size:6px;">' + dayName + '</th>';
+        }
+        html += '</tr><tr>';
+        
+        for(let d = 1; d <= m.d; d++){
+            const wd = new Date(currentYear, mi, d).getDay();
+            const isHoliday = wd === 0 || wd === 6 || m.h.includes(d);
+            const bgColor = isHoliday ? '#fef3c7' : '#dbeafe';
+            html += '<th style="background:' + bgColor + ';color:#172754;border:1px solid #ddd;padding:0px;font-weight:bold;font-size:7px;">' + d + '</th>';
+        }
+        html += '</tr></thead><tbody>';
+        
+        users.forEach(u => {
+            // Abbrevia nomi lunghi
+            const userName = u.length > 8 ? u.substring(0,7) : u;
+            html += '<tr><td style="font-weight:bold;text-align:left;background:#f9fafb;border:1px solid #ddd;padding:1px 2px;font-size:7px;">' + userName + '</td>';
+            for(let d = 1; d <= m.d; d++){
+                const wd = new Date(currentYear, mi, d).getDay();
+                const key = u + '-' + currentYear + '-' + mi + '-' + d;
+                const v = dataCache[key] || "";
+                
+                // Domeniche e festivi
+                if(wd === 0 || m.h.includes(d)){
+                    html += '<td style="background:#fef3c7;border:1px solid #ddd;padding:0px;text-align:center;font-size:6px;"></td>';
+                }
+                // Sabati (presidio)
+                else if(wd === 6){
+                    let displayValue = v;
+                    let bgColor = '#fef3c7'; // Giallo default
+                    let textColor = '#78350f';
+                    
+                    // Se ha presidio diventa blu scuro con testo bianco
+                    if(v.startsWith && v.startsWith('P-')){
+                        displayValue = v.substring(2);
+                        bgColor = '#2F5BD4';
+                        textColor = '#ffffff';
+                    }
+                    
+                    html += '<td style="background:' + bgColor + ';color:' + textColor + ';border:1px solid #ddd;padding:0px;text-align:center;font-weight:bold;font-size:7px;">' + displayValue + '</td>';
+                }
+                // Altri giorni (ferie)
+                else {
+                    let bgColor = 'white';
+                    let textColor = '#000';
+                    if(v === '8'){
+                        bgColor = '#fecaca';
+                        textColor = '#991b1b';
+                    } else if(v.endsWith && v.endsWith('M')){
+                        bgColor = '#bfdbfe';
+                        textColor = '#1e3a8a';
+                    } else if(v.endsWith && v.endsWith('P')){
+                        bgColor = '#ddd6fe';
+                        textColor = '#5b21b6';
+                    }
+                    html += '<td style="background:' + bgColor + ';color:' + textColor + ';border:1px solid #ddd;padding:0px;text-align:center;font-weight:bold;font-size:7px;">' + v + '</td>';
+                }
+            }
+            html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+    });
+    
+    html += '</div>';
+    
+    // Crea elemento
+    const element = document.createElement('div');
+    element.innerHTML = html;
+    document.body.appendChild(element);
+    
+    // Opzioni
+    const opt = {
+        margin: 10,
+        filename: fileName + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    // Genera
+    html2pdf().set(opt).from(element).save().then(function(){
+        document.body.removeChild(element);
+    }).catch(function(error){
+        console.error('Errore PDF:', error);
+        if(document.body.contains(element)){
+            document.body.removeChild(element);
+        }
+    });
 }
 
 // ================= INIT APP =================
@@ -1293,6 +2212,18 @@ window.initApp = async function() {
     setupRealtimeListener();
     render();
     document.getElementById('loadingOverlay').style.display = 'none';
+    
+    // Listener per ESC - annulla selezione multipla o chiudi popup
+    document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape'){
+            const actionsPopup = document.getElementById('selectionActionsPopup');
+            if(actionsPopup){
+                closeSelectionActionsPopup();
+            } else if(selectedCells.length > 0){
+                clearSelection();
+            }
+        }
+    });
 };
 
 if (window.firebaseDB) {
@@ -1302,4 +2233,3 @@ if (window.firebaseDB) {
 
 </body>
 </html>
-
